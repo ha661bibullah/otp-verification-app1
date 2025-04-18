@@ -153,37 +153,3 @@ app.post("/verify-otp", (req, res) => {
 // ✅ Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
-// যুক্ত করা হয়েছে in github
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// 👉 Static file serve
-app.use(express.static(path.join(__dirname, "../client")));
-
-// ✅ API Routes
-app.post("/send-email-otp", (req, res) => {
-  // Email OTP logic
-});
-
-app.post("/send-sms-otp", (req, res) => {
-  // SMS OTP logic
-});
-
-// 👉 Serve index.html for all routes (SPA)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/index.html"));
-});
-
-// ✅ Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
