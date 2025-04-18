@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OTP Verification</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -159,58 +160,7 @@
 
 
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 300px;
-      text-align: center;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-    #message {
-      margin-top: 15px;
-      color: green;
-    }
-    #resend-btn {
-      margin-top: 10px;
-    }
-    @media (max-width: 400px) {
-  .container {
-    width: 90%;
-    padding: 20px;
-  }
-}
 
-  </style> 
   
   <div class="container">
     <h2>OTP Verification</h2>
@@ -233,103 +183,7 @@
   </div>
   
 
-  <script>
-    let retryCount = 0;
-const maxRetries = 5;
-let timer;
-let secondsLeft = 30;
-
-function startTimer() {
-  const resendBtn = document.getElementById("resend-btn");
-  resendBtn.disabled = true;
-  resendBtn.innerText = `পুনরায় পাঠাতে ${secondsLeft} সেকেন্ড অপেক্ষা করুন`;
-
-  timer = setInterval(() => {
-    secondsLeft--;
-    resendBtn.innerText = `পুনরায় পাঠাতে ${secondsLeft} সেকেন্ড অপেক্ষা করুন`;
-
-    if (secondsLeft <= 0) {
-      clearInterval(timer);
-      resendBtn.disabled = false;
-      resendBtn.innerText = "পুনরায় OTP পাঠাও";
-      secondsLeft = 30;
-    }
-  }, 1000);
-}
-
-function sendOTP() {
-  const email = document.getElementById("email").value;
-  const phone = document.getElementById("phone").value;
-
-  if (!email && !phone) {
-    alert("ইমেইল বা ফোন নম্বর ঠিকমতো লিখুন!");
-    return;
-  }
-
-  // যেটা থাকবে, সেটি ফ্রন্টএন্ড থেকে প্রেরণ করা হবে
-  const data = email ? { email } : { phone };
-
-  fetch("/send-otp", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("OTP পাঠাতে সমস্যা হয়েছে");
-      return res.text();
-    })
-    .then((msg) => {
-      document.getElementById("otp-section").style.display = "block";
-      document.getElementById("message").style.color = "green";
-      document.getElementById("message").innerText = msg;
-      startTimer(); // টাইমার শুরু
-    })
-    .catch((err) => {
-      document.getElementById("message").style.color = "red";
-      document.getElementById("message").innerText = err.message;
-    });
-}
-
-function verifyOTP() {
-  const email = document.getElementById("email").value;
-  const phone = document.getElementById("phone").value;
-  const otp = document.getElementById("otp").value;
-
-  if (!otp) {
-    alert("OTP দিন!");
-    return;
-  }
-
-  const data = email ? { email, otp } : { phone, otp };
-
-  fetch("/verify-otp", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("ভুল OTP!");
-      return res.text();
-    })
-    .then((msg) => {
-      document.getElementById("message").style.color = "green";
-      document.getElementById("message").innerText = msg;
-      document.getElementById("otp-section").style.display = "none";
-      retryCount = 0; // সফল হলে রিসেট করো
-    })
-    .catch((err) => {
-      retryCount++;
-      document.getElementById("message").style.color = "red";
-      document.getElementById("message").innerText = err.message;
-
-      if (retryCount >= maxRetries) {
-        alert("৫ বার ভুল দিয়েছেন! অনুগ্রহ করে একটু পরে চেষ্টা করুন।");
-        document.getElementById("verify-btn").disabled = true;
-      }
-    });
-}
-
-  </script>
+<script src="script.js"></script>
 
 </body>
 </html>
