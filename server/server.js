@@ -1,99 +1,30 @@
-// // শুধু জিমেইল ভেরিফিকেশনের কোড
-// const express = require("express");
-// const nodemailer = require("nodemailer");
-// const path = require("path");
-// const cors = require("cors");
-// require("dotenv").config();
-
-// const app = express();
-
-// // ✅ CORS সেটআপ (শুধু একবার এবং সঠিকভাবে)
-// app.use(cors({
-//   origin: "https://otp-verification-app-nj90.onrender.com", // তোমার frontend live URL
-//   methods: ["GET", "POST", "OPTIONS"],
-//   credentials: true
-// }));
-
-// app.use(express.json());
-
-// // ✅ Static frontend serve (HTML, CSS, JS ফাইল public ফোল্ডার থেকে দেখাবে)
-// app.use(express.static(path.join(__dirname, "public")));
-
-// let otpStore = {};
-
-// // ✅ Nodemailer config
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
-//   },
-// });
-
-// // ✅ Send OTP route
-// app.post("/send-otp", (req, res) => {
-//   const { email } = req.body;
-//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-//   otpStore[email] = otp;
-
-//   const mailOptions = {
-//     from: process.env.EMAIL_USER,
-//     to: email,
-//     subject: "Your OTP Code",
-//     text: `Your OTP code is ${otp}`,
-//   };
-
-//   transporter.sendMail(mailOptions, (error, info) => {
-//     if (error) return res.status(500).send("Email send failed");
-//     res.send("OTP sent successfully");
-//   });
-// });
-
-// // ✅ Verify OTP route
-// app.post("/verify-otp", (req, res) => {
-//   const { email, otp } = req.body;
-//   if (otpStore[email] === otp) {
-//     delete otpStore[email];
-//     res.send("OTP verified successfully");
-//   } else {
-//     res.status(400).send("Invalid OTP");
-//   }
-// });
-
-// // ✅ Start the server
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
-
-
-
 const express = require("express");
 const nodemailer = require("nodemailer");
 const path = require("path");
 const cors = require("cors");
 require("dotenv").config();
-
 const twilio = require("twilio");
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);   // Twilio client
 
 const app = express();
 
-// ✅ CORS সেটআপ (শুধু একবার এবং সঠিকভাবে)
+// ✅ Twilio config
+const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+// ✅ CORS সঠিকভাবে (Netlify frontend URL দিন এখানে)
 app.use(cors({
-  origin: "https://otp-verification-app-nj90.onrender.com", // তোমার frontend live URL
+  origin: "https://euphonious-marzipan-bc8af5.netlify.app",  // ← Netlify live URL
   methods: ["GET", "POST", "OPTIONS"],
   credentials: true
 }));
 
 app.use(express.json());
 
-// ✅ Static frontend serve (HTML, CSS, JS ফাইল public ফোল্ডার থেকে দেখাবে)
+// ✅ Static ফাইল সার্ভ করবে (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, "public")));
 
 let otpStore = {};
 
-// ✅ Nodemailer config (ইমেইল OTP পাঠানোর জন্য)
+// ✅ Nodemailer config (Gmail দিয়ে ইমেইল পাঠানো)
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -102,13 +33,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ✅ Send OTP route
+// ✅ OTP পাঠানোর route
 app.post("/send-otp", (req, res) => {
   const { email, phone } = req.body;
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   otpStore[email || phone] = otp;
 
-  // যদি ইমেইল দেওয়া থাকে
+  // ইমেইলে পাঠানো
   if (email) {
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -119,48 +50,37 @@ app.post("/send-otp", (req, res) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) return res.status(500).send("Email send failed");
-      res.send("OTP sent successfully via Email");
+      return res.send("OTP sent successfully via Email");
     });
   }
 
-  // যদি ফোন নম্বর দেওয়া থাকে
+  // ফোনে SMS পাঠানো
   if (phone) {
     client.messages.create({
       body: `Your OTP code is ${otp}`,
-      from: process.env.TWILIO_PHONE_NUMBER, // Twilio phone number
+      from: process.env.TWILIO_PHONE_NUMBER,
       to: phone,
     })
     .then(message => {
-      res.send("OTP sent successfully via SMS");
+      return res.send("OTP sent successfully via SMS");
     })
     .catch(error => {
-      res.status(500).send("SMS send failed");
+      return res.status(500).send("SMS send failed");
     });
   }
 });
 
-// ✅ Verify OTP route
+// ✅ OTP যাচাই করার route
 app.post("/verify-otp", (req, res) => {
   const { email, phone, otp } = req.body;
   if (otpStore[email || phone] === otp) {
-    delete otpStore[email || phone];  // OTP যাচাই হলে সেটি মুছে ফেলা হবে
-    res.send("OTP verified successfully");
+    delete otpStore[email || phone];  // OTP একবার ব্যবহার হলে মুছে ফেলবো
+    return res.send("OTP verified successfully");
   } else {
-    res.status(400).send("Invalid OTP");
+    return res.status(400).send("Invalid OTP");
   }
 });
 
-// ✅ Start the server
+// ✅ সার্ভার চালু
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// যুক্ত করা হয়েছে 
-const cors = require("cors");
-app.use(cors());
-
-
-
-const cors = require('cors');
-app.use(cors({
-  origin: 'https://euphonious-marzipan-bc8af5.netlify.app'  // Netlify URL
-}));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
