@@ -157,3 +157,10 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 // যুক্ত করা হয়েছে 
 const cors = require("cors");
 app.use(cors());
+
+
+
+const cors = require('cors');
+app.use(cors({
+  origin: 'https://euphonious-marzipan-bc8af5.netlify.app'  // Netlify URL
+}));

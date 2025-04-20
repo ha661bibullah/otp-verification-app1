@@ -105,14 +105,14 @@ body: JSON.stringify(data),
 
 
 // যুক্ত করা হয়েছে
-fetch("https://otp-verification-app1.onrender.com/send-otp", {
-    method: "POST",
+fetch('https://otp-verification-app1.onrender.com/send-otp', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json"
+      'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ email: userEmail })
+    body: JSON.stringify({
+      email: email,  // অথবা আপনার ফর্ম ডাটা
+      phone: phone
+    })
   })
-  .then(res => res.json())
-  .then(data => console.log("OTP sent", data))
-  .catch(err => console.error("Error:", err));
   
