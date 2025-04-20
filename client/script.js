@@ -21,25 +21,13 @@ function startTimer() {
   }, 1000);
 }
 
-function formatPhone(phone) {
-  // 01712345678 ➜ +8801712345678
-  if (phone.startsWith("0")) {
-    return "+880" + phone.slice(1);
-  }
-  return phone;
-}
-
 function sendOTP() {
   const email = document.getElementById("email").value.trim();
-  let phone = document.getElementById("phone").value.trim();
+  const phone = document.getElementById("phone").value.trim();
 
   if (!email && !phone) {
-    alert("ইমেইল বা ফোন নম্বর ঠিকমতো লিখুন!");
+    alert("ইমেইল বা ফোন নম্বর লিখুন!");
     return;
-  }
-
-  if (phone) {
-    phone = formatPhone(phone);
   }
 
   const data = email ? { email } : { phone };
@@ -57,7 +45,7 @@ function sendOTP() {
       document.getElementById("otp-section").style.display = "block";
       document.getElementById("message").style.color = "green";
       document.getElementById("message").innerText = msg;
-      startTimer();
+      startTimer(); // টাইমার শুরু
     })
     .catch((err) => {
       document.getElementById("message").style.color = "red";
@@ -67,16 +55,12 @@ function sendOTP() {
 
 function verifyOTP() {
   const email = document.getElementById("email").value.trim();
-  let phone = document.getElementById("phone").value.trim();
+  const phone = document.getElementById("phone").value.trim();
   const otp = document.getElementById("otp").value.trim();
 
   if (!otp) {
     alert("OTP দিন!");
     return;
-  }
-
-  if (phone) {
-    phone = formatPhone(phone);
   }
 
   const data = email ? { email, otp } : { phone, otp };
@@ -94,7 +78,7 @@ function verifyOTP() {
       document.getElementById("message").style.color = "green";
       document.getElementById("message").innerText = msg;
       document.getElementById("otp-section").style.display = "none";
-      retryCount = 0;
+      retryCount = 0; // সফল হলে রিসেট করো
     })
     .catch((err) => {
       retryCount++;
